@@ -31,5 +31,5 @@ ENV PATH="/venv/bin:$PATH"
 # Set environment variable for Flask
 ENV FLASK_APP=app.py
 
-# Command to run tests (can be overridden)
-CMD ["/venv/bin/pytest", "tests/"]
+# Command to run the application (can be overridden)
+CMD ["/venv/bin/python", "app.py"]

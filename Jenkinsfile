@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKER_IMAGE = "rise-app:${env.BUILD_ID}"
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -10,19 +14,19 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker-compose build'
+                sh "docker build -t ${DOCKER_IMAGE} ."
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh 'docker-compose run --rm test'
+                sh "docker run --rm ${DOCKER_IMAGE} /venv/bin/pytest tests/"
             }
         }
 
         stage('Deploy to Test Environment') {
             steps {
-                sh 'docker-compose up -d app'
+                sh "docker run -d --name rise-app-test -p 5000:5000 ${DOCKER_IMAGE}"
                 sh 'echo "Application deployed to test environment"'
                 sh 'sleep 5' // Give the app a moment to start up
             }
@@ -37,7 +41,9 @@ pipeline {
 
     post {
         always {
-            sh 'docker-compose down'
+            sh 'docker stop rise-app-test || true'
+            sh 'docker rm rise-app-test || true'
+            sh "docker rmi ${DOCKER_IMAGE} || true"
         }
     }
 }
