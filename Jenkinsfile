@@ -10,20 +10,24 @@ pipeline {
         
         stage('Build') {
             steps {
-                sh 'pip install -r requirements.txt'
+                // Use pip3 instead of pip
+                sh 'pip3 install -r requirements.txt'
             }
         }
         
         stage('Test') {
             steps {
-                sh 'pip install pytest'
-                sh 'python -m pytest tests/'
+                // Install pytest using pip3
+                sh 'pip3 install pytest'
+                // Run tests
+                sh 'python3 -m pytest tests/'
             }
         }
         
         stage('Deploy to Test') {
             steps {
-                sh 'python app.py &'  // Start the application in the background
+                // Start the application in the background
+                sh 'python3 app.py &'
                 sh 'echo "Application deployed to test environment"'
             }
         }
@@ -31,7 +35,8 @@ pipeline {
     
     post {
         always {
-            sh 'pkill -f "python app.py" || true'  // Stop the application
+            // Stop the application after the pipeline finishes
+            sh 'pkill -f "python3 app.py" || true'
         }
     }
 }
