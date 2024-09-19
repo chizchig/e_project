@@ -2,21 +2,19 @@ pipeline {
     agent any
 
     environment {
-        PYTHON_VERSION = '3.8'  // Adjust this to match your project's Python version
         VENV_NAME = 'venv'
     }
 
     stages {
-        stage('Checkout') {
+        stage('Check Python Version') {
             steps {
-                checkout scm
+                sh 'python3 --version'
             }
         }
 
-        stage('Setup Python') {
+        stage('Checkout') {
             steps {
-                sh "python${PYTHON_VERSION} -m venv ${VENV_NAME}"
-                sh ". ${VENV_NAME}/bin/activate && pip install --upgrade pip"
+                checkout scm
             }
         }
 
