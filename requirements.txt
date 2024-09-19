@@ -10,7 +10,7 @@ attrs==23.2.0
 Babel==2.14.0
 beautifulsoup4==4.12.3
 bleach==5.0.1
-blinker==1.7.0
+blinker==1.6.3
 boto3==1.34.103
 botocore==1.34.103
 cattrs==23.2.3
