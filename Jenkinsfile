@@ -20,6 +20,29 @@ pipeline {
             }
         }
 
+        stage('Update Requirements') {
+            steps {
+                script {
+                    // Create a new requirements file with compatible versions
+                    sh '''
+                    cat << EOF > requirements.txt
+Flask==1.1.4
+Flask-SQLAlchemy==2.5.1
+pytest==6.2.5
+Werkzeug==1.0.1
+python-dotenv==0.19.2
+EOF
+                    '''
+                }
+            }
+        }
+
+        stage('Check Updated Requirements') {
+            steps {
+                sh 'cat requirements.txt'
+            }
+        }
+
         stage('Setup Virtual Environment') {
             steps {
                 sh '${PYTHON_CMD} -m venv ${VENV_NAME}'
