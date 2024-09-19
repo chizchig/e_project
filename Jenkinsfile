@@ -26,13 +26,19 @@ pipeline {
         
         stage('Install Dependencies') {
             steps {
-                sh '. ${VENV_DIR}/bin/activate && pip install -r requirements.txt'
+                script {
+                    try {
+                        sh '. ${VENV_DIR}/bin/activate && pip install -r requirements.txt'
+                    } catch (Exception e) {
+                        echo "Failed to install dependencies from requirements.txt. Attempting to install essential packages..."
+                        sh '. ${VENV_DIR}/bin/activate && pip install Flask Flask-SQLAlchemy python-dotenv pytest SQLAlchemy Werkzeug'
+                    }
+                }
             }
         }
         
         stage('Run Tests') {
             steps {
-                sh '. ${VENV_DIR}/bin/activate && pip install pytest'
                 sh '. ${VENV_DIR}/bin/activate && python3 -m pytest tests/'
             }
         }
