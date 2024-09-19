@@ -1,20 +1,20 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import IntegrityError
-from dotenv import load_dotenv  # type: ignore
+from werkzeug.security import generate_password_hash, check_password_hash
+from dotenv import load_dotenv
 import os
 
 # Load environment variables from a .env file
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = os.getenv('SECRET_KEY', 'replace_this_with_a_secure_key')  # Replace with a secure secret key
+app.secret_key = os.getenv('SECRET_KEY', 'replace_this_with_a_secure_key')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///site.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-# User model
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), unique=True, nullable=False)
@@ -25,18 +25,19 @@ class User(db.Model):
     phone_number = db.Column(db.String(15), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
 
-# Routes
-
 @app.route('/')
 def home():
     if 'user' in session:
         return redirect(url_for('dashboard'))
     return render_template('home.html')
 
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
-        # Get user input from the form
         username = request.form['username']
         password = request.form['password']
         confirm_password = request.form['confirm_password']
@@ -46,36 +47,40 @@ def signup():
         phone_number = request.form['phone_number']
         email = request.form['email']
 
-        # Check if the password and confirm password match
         if password != confirm_password:
-            return render_template('signup.html', error='Passwords do not match')
+            flash('Passwords do not match', 'danger')
+            return render_template('signup.html')
 
-        # Create a new user and add to the database
-        new_user = User(username=username, password=password, first_name=first_name,
+        hashed_password = generate_password_hash(password)
+        new_user = User(username=username, password=hashed_password, first_name=first_name,
                         last_name=last_name, age=age, phone_number=phone_number, email=email)
         
         try:
             db.session.add(new_user)
             db.session.commit()
-            return redirect(url_for('home'))  # Redirect to the login page
+            flash('Account created successfully', 'success')
+            return redirect(url_for('home'))
         except IntegrityError:
             db.session.rollback()
-            return render_template('signup.html', error='Email or Username already exists. Please use a different one.')
+            flash('Email or Username already exists. Please use a different one.', 'danger')
 
     return render_template('signup.html')
 
-@app.route('/login', methods=['POST'])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    username = request.form['username']
-    password = request.form['password']
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
 
-    # Check if the user is registered
-    user = User.query.filter_by(username=username, password=password).first()
-    if user:
-        session['user'] = user.username
-        return redirect(url_for('dashboard'))
+        user = User.query.filter_by(username=username).first()
+        if user and check_password_hash(user.password, password):
+            session['user'] = user.username
+            flash('Logged in successfully', 'success')
+            return redirect(url_for('dashboard'))
+        else:
+            flash('Invalid credentials', 'danger')
 
-    return render_template('home.html', error='Invalid credentials')
+    return render_template('home.html')
 
 @app.route('/dashboard')
 def dashboard():
@@ -88,6 +93,7 @@ def dashboard():
 @app.route('/logout')
 def logout():
     session.pop('user', None)
+    flash('Logged out successfully', 'success')
     return redirect(url_for('home'))
 
 @app.route('/activities')
@@ -103,10 +109,7 @@ def search():
 def chat():
     return render_template('chat.html')
 
-# Run the application
-
 if __name__ == '__main__':
     with app.app_context():
-        # Create the database tables before running the application
         db.create_all()
     app.run(debug=True)
