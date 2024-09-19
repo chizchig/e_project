@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Home</title>
+    <style>
+        /* Additional CSS styles for the home page */
+        .container {
+            text-align: center;
+        }
+
+        .signup-message {
+            color: #007BFF; /* Blue color for the message */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to the EmpireHub</h1>
+        <div class="error">{{ error }}</div>
+        <form action="/login" method="post">
+            <label for="username">Username:</label>
+            <input type="text" name="username" required>
+            <label for="password">Password:</label>
+            <input type="password" name="password" required>
+            <button type="submit">Sign In</button>
+        </form>
+        <p class="signup-message">Don't have an account? <a href="/signup" style="color: #007BFF;">Sign Up</a></p>
+    </div>
+</body>
+</html>

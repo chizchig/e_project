@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Chat</title>
+    <style>
+        /* Additional CSS styles for the chat messages */
+        #chat-box {
+            border: 1px solid #ccc;
+            padding: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .message {
+            margin-bottom: 10px;
+        }
+        .sent {
+            color: green; /* Change the color for messages sent by the user */
+        }
+
+        /* Style for the Back to Dashboard button */
+        .back-button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin-top: 10px;
+            background-color: #007BFF; /* Change the background color */
+            color: #fff; /* Change the text color */
+            text-decoration: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .back-button:hover {
+            background-color: #0056b3; /* Change the background color on hover */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Chat</h1>
+        <div id="chat-box">
+            <!-- Chat messages will be displayed here -->
+        </div>
+        <form id="message-form">
+            <textarea name="message" id="message" placeholder="Type your message..." required></textarea>
+            <button type="submit">Send</button>
+        </form>
+        <!-- Back to Dashboard button -->
+        <a href="{{ url_for('dashboard') }}" class="back-button">Back to Dashboard</a>
+    </div>
+
+    <!-- JavaScript for updating the chat messages -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const chatBox = document.getElementById('chat-box');
+            const messageForm = document.getElementById('message-form');
+            const messageInput = document.getElementById('message');
+
+            function addMessage(user, text, isSent) {
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message');
+                if (isSent) {
+                    messageElement.classList.add('sent');
+                }
+                messageElement.textContent = `${user.first_name}: ${text}`;
+                chatBox.appendChild(messageElement);
+            }
+
+            // Fetch initial messages from the server
+            fetch('/get_messages')
+                .then(response => response.json())
+                .then(data => {
+                    data.messages.forEach(message => {
+                        addMessage(message.user, message.text, message.user.first_name === 'Sender');
+                    });
+                });
+
+            // Event listener for submitting a new message
+            messageForm.addEventListener('submit', function (event) {
+                event.preventDefault();
+                const newMessage = messageInput.value;
+                if (newMessage.trim() !== '') {
+                    // Add the new message to the server
+                    fetch('/send_message', {
+                        method: 'POST',
+                        body: new URLSearchParams({ 'message': newMessage }),
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                    });
+
+                    // Add the new message to the chat box, marking it as sent
+                    addMessage({ first_name: 'Sender' }, newMessage, true);
+                    // Clear the input field
+                    messageInput.value = '';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

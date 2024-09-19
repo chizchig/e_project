@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Activities</title>
+    <style>
+        /* Additional CSS styles for the activities page */
+        .container {
+            text-align: center;
+        }
+
+        /* Style for the Back to Dashboard button */
+        .back-button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin-top: 10px;
+            background-color: #007BFF; /* Change the background color */
+            color: #fff; /* Change the text color */
+            text-decoration: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .back-button:hover {
+            background-color: #0056b3; /* Change the background color on hover */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Activities</h1>
+        <form action="/search" method="get">
+            <label for="search">Search:</label>
+            <input type="text" name="search" required>
+            <button type="submit">Search</button>
+        </form>
+
+        <!-- Back to Dashboard button -->
+        <a href="{{ url_for('dashboard') }}" class="back-button">Back to Dashboard</a>
+    </div>
+</body>
+</html>
