@@ -1,19 +1,17 @@
 import pytest
+import os
 from app import app, db, User
 from flask import session
 
 @pytest.fixture
 def client():
     app.config['TESTING'] = True
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///:memory:')
     app.config['WTF_CSRF_ENABLED'] = False
     client = app.test_client()
-
     with app.app_context():
         db.create_all()
-
     yield client
-
     with app.app_context():
         db.drop_all()
 
