@@ -6,7 +6,7 @@ from flask import session
 def client():
     app.config['TESTING'] = True
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
-    app.config['WTF_CSRF_ENABLED'] = False  # Disable CSRF for testing
+    app.config['WTF_CSRF_ENABLED'] = False
     client = app.test_client()
 
     with app.app_context():
@@ -18,57 +18,57 @@ def client():
         db.drop_all()
 
 def test_home_page(client):
-    """Test that home page loads correctly"""
     rv = client.get('/')
     assert rv.status_code == 200
     assert b"Welcome" in rv.data
 
 def test_about_page(client):
-    """Test that about page loads correctly"""
     rv = client.get('/about')
     assert rv.status_code == 200
-    assert b"About" in rv.data
+    assert b"About Us" in rv.data
 
 def test_create_user(client):
-    """Test user creation"""
-    with client:
-        rv = client.post('/signup', data=dict(
-            username='testuser',
-            email='testuser@example.com',
-            password='testpassword',
-            confirm_password='testpassword',
-            first_name='Test',
-            last_name='User',
-            age='30',
-            phone_number='1234567890'
-        ), follow_redirects=True)
-        assert rv.status_code == 200
-        assert b"Account created successfully" in rv.data or b"Account created successfully" in session['_flashes'][0][1].encode()
+    with client.session_transaction() as sess:
+        sess['_flashes'] = []
+    rv = client.post('/signup', data=dict(
+        username='testuser',
+        email='testuser@example.com',
+        password='testpassword',
+        confirm_password='testpassword',
+        first_name='Test',
+        last_name='User',
+        age='30',
+        phone_number='1234567890'
+    ), follow_redirects=True)
+    assert rv.status_code == 200
+    assert b"Account created successfully" in rv.data or b"Account created successfully" in session['_flashes'][0][1].encode()
 
 def test_login_logout(client):
-    """Test login and logout functionality"""
-    with client:
-        # Create a user
-        client.post('/signup', data=dict(
-            username='testuser',
-            email='testuser@example.com',
-            password='testpassword',
-            confirm_password='testpassword',
-            first_name='Test',
-            last_name='User',
-            age='30',
-            phone_number='1234567890'
-        ))
+    # Create a user
+    client.post('/signup', data=dict(
+        username='testuser',
+        email='testuser@example.com',
+        password='testpassword',
+        confirm_password='testpassword',
+        first_name='Test',
+        last_name='User',
+        age='30',
+        phone_number='1234567890'
+    ))
 
-        # Login
-        rv = client.post('/login', data=dict(
-            username='testuser',
-            password='testpassword'
-        ), follow_redirects=True)
-        assert rv.status_code == 200
-        assert b"Logged in successfully" in rv.data or b"Logged in successfully" in session['_flashes'][0][1].encode()
+    # Clear flash messages
+    with client.session_transaction() as sess:
+        sess['_flashes'] = []
 
-        # Logout
-        rv = client.get('/logout', follow_redirects=True)
-        assert rv.status_code == 200
-        assert b"Logged out successfully" in rv.data or b"Logged out successfully" in session['_flashes'][0][1].encode()
+    # Login
+    rv = client.post('/login', data=dict(
+        username='testuser',
+        password='testpassword'
+    ), follow_redirects=True)
+    assert rv.status_code == 200
+    assert b"Logged in successfully" in rv.data or any(b"Logged in successfully" in f[1].encode() for f in session['_flashes'])
+
+    # Logout
+    rv = client.get('/logout', follow_redirects=True)
+    assert rv.status_code == 200
+    assert b"Logged out successfully" in rv.data or any(b"Logged out successfully" in f[1].encode() for f in session['_flashes'])
