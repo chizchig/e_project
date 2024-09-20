@@ -145,9 +145,25 @@ EOF
             }
         }
 
+        // stage('Run Tests') {
+        //     steps {
+        //         sh ". ${VENV_NAME}/bin/activate && ${PYTHON_CMD} -m pytest tests/"
+        //     }
+        // }
+
         stage('Run Tests') {
-            steps {
-                sh ". ${VENV_NAME}/bin/activate && ${PYTHON_CMD} -m pytest tests/"
+        steps {
+            sh """
+                . ${VENV_NAME}/bin/activate
+                ${PYTHON_CMD} -m pip install pytest-cov
+                ${PYTHON_CMD} -m pytest tests/ --junitxml=test-results/results.xml --cov=. --cov-report=xml
+            """
+            }
+            post {
+                always {
+                    junit 'test-results/*.xml'
+                    cobertura coberturaReportFile: 'coverage.xml'
+                }
             }
         }
 
