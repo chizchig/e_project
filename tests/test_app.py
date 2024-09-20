@@ -24,6 +24,7 @@ def test_about_page(client):
     rv = client.get('/about')
     assert rv.status_code == 200
     assert b"About our application" in rv.data
+    assert b"This is the about page of our application" in rv.data
 
 def test_create_user(client):
     with app.app_context():
