@@ -5,10 +5,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>Sign Up</title>
+    <style>
+        /* Add styles for flash messages */
+        .alert {
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+        }
+        
+        .alert-success {
+            color: #155724;
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+        
+        .alert-danger {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <h1>Sign Up</h1>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
         <div class="error">{{ error }}</div>
         <form action="/signup" method="post">
             <label for="username">Username:</label>
@@ -24,19 +54,4 @@
             <label for="age">Age:</label>
             <input type="text" name="age" required>
             <label for="phone_number">Phone Number:</label>
-            <input type="text" name="phone_number" required>
-            <label for="email">Email:</label>
-            <input type="email" name="email" required>
-            <button type="submit">Sign Up</button>
-        </form>
-    </div>
-</body>
-</html>
-
-{% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        {% for category, message in messages %}
-            <div class="alert alert-{{ category }}">{{ message }}</div>
-        {% endfor %}
-    {% endif %}
-{% endwith %}
+            <input type="text

@@ -34,7 +34,7 @@ def home():
 
 @app.route('/about')
 def about():
-    return render_template('about.html')
+    return render_template('about.html', content="About our application")
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -48,8 +48,26 @@ def signup():
         phone_number = request.form['phone_number']
         email = request.form['email']
 
+        # Additional validation
+        if not all([username, password, confirm_password, first_name, last_name, age, phone_number, email]):
+            flash('All fields are required', 'danger')
+            return render_template('signup.html')
+
         if password != confirm_password:
             flash('Passwords do not match', 'danger')
+            return render_template('signup.html')
+
+        if len(password) < 8:
+            flash('Password must be at least 8 characters long', 'danger')
+            return render_template('signup.html')
+
+        try:
+            age = int(age)
+            if age < 18:
+                flash('You must be at least 18 years old to sign up', 'danger')
+                return render_template('signup.html')
+        except ValueError:
+            flash('Age must be a number', 'danger')
             return render_template('signup.html')
 
         hashed_password = generate_password_hash(password)

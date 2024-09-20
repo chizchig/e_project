@@ -11,8 +11,9 @@ def client():
         with app.app_context():
             db.create_all()
         yield client
-        with app.app_context():
-            db.drop_all()
+
+    with app.app_context():
+        db.drop_all()
 
 def test_home_page(client):
     rv = client.get('/')
@@ -22,7 +23,7 @@ def test_home_page(client):
 def test_about_page(client):
     rv = client.get('/about')
     assert rv.status_code == 200
-    assert b"About" in rv.data  
+    assert b"About our application" in rv.data
 
 def test_create_user(client):
     with app.app_context():
@@ -36,12 +37,13 @@ def test_create_user(client):
             age='30',
             phone_number='1234567890'
         ), follow_redirects=True)
+        print("Create User Response:", rv.data.decode('utf-8'))
         assert rv.status_code == 200
         assert b"Account created successfully" in rv.data or b"Email or Username already exists" in rv.data
 
 def test_login_logout(client):
-    # Create a user
     with app.app_context():
+        # Create a user
         client.post('/signup', data=dict(
             username='testuser',
             email='testuser@example.com',
@@ -53,17 +55,17 @@ def test_login_logout(client):
             phone_number='1234567890'
         ))
 
-    # Login
-    with app.app_context():
+        # Login
         rv = client.post('/login', data=dict(
             username='testuser',
             password='testpassword'
         ), follow_redirects=True)
+        print("Login Response:", rv.data.decode('utf-8'))
         assert rv.status_code == 200
-        assert b"Logged in successfully" in rv.data or b"Invalid credentials" in rv.data
+        assert b"Logged in successfully" in rv.data or b"Welcome home !!!" in rv.data
 
-    # Logout
-    with app.app_context():
+        # Logout
         rv = client.get('/logout', follow_redirects=True)
+        print("Logout Response:", rv.data.decode('utf-8'))
         assert rv.status_code == 200
         assert b"Logged out successfully" in rv.data

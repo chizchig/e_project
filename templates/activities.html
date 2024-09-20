@@ -26,10 +26,38 @@
         .back-button:hover {
             background-color: #0056b3; /* Change the background color on hover */
         }
+
+        /* Add styles for flash messages */
+        .alert {
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+        }
+        
+        .alert-success {
+            color: #155724;
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+        
+        .alert-danger {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
     </style>
 </head>
 <body>
     <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
         <h1>Activities</h1>
         <form action="/search" method="get">
             <label for="search">Search:</label>
